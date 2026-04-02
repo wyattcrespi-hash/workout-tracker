@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lean Out Program</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --surface-2: #1c1c1c;
+    --surface-3: #242424;
+    --border: #2a2a2a;
+    --text: #e8e8e8;
+    --text-dim: #888;
+    --text-muted: #555;
+    --accent: #c4f542;
+    --accent-dim: #8aad2e;
+    --red: #ff4d4d;
+    --blue: #4da6ff;
+    --orange: #ff9f43;
+    --purple: #b388ff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Source Sans 3', sans-serif;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 24px 16px 60px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 32px 0 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+
+  .header-label {
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .header h1 {
+    font-family: 'Oswald', sans-serif;
+    font-size: 36px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    line-height: 1.1;
+  }
+
+  .header-sub {
+    color: var(--text-dim);
+    font-size: 14px;
+    margin-top: 8px;
+    font-weight: 300;
+  }
+
+  .stats-bar {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+
+  .stat-item {
+    text-align: center;
+  }
+
+  .stat-value {
+    font-family: 'Oswald', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  .stat-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* Overview Section */
+  .overview {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+
+  .overview h2 {
+    font-family: 'Oswald', sans-serif;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  .overview p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-dim);
+    font-weight: 300;
+  }
+
+  .overview p strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* Weekly Schedule */
+  .week-nav {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .day-tab {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    user-select: none;
+  }
+
+  .day-tab:hover {
+    border-color: var(--text-muted);
+  }
+
+  .day-tab.active {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .day-tab.active .day-name,
+  .day-tab.active .day-label {
+    color: #0a0a0a;
+  }
+
+  .day-tab.rest {
+    opacity: 0.5;
+  }
+
+  .day-tab.rest.active {
+    opacity: 1;
+  }
+
+  .day-name {
+    font-family: 'Oswald', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 1px;
+  }
+
+  .day-label {
+    font-size: 9px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Day Content */
+  .day-content {
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .day-content.active {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .day-header {
+    margin-bottom: 16px;
+  }
+
+  .day-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .day-focus {
+    color: var(--text-dim);
+    font-size: 13px;
+    margin-top: 4px;
+    font-weight: 300;
+  }
+
+  .day-duration {
+    display: inline-block;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 500;
+    margin-top: 8px;
+  }
+
+  /* Exercise Blocks */
+  .block {
+    margin-bottom: 16px;
+  }
+
+  .block-header {
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    padding-left: 4px;
+  }
+
+  .exercise {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    transition: border-color 0.2s;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .exercise:hover {
+    border-color: var(--text-muted);
+  }
+
+  .exercise.completed {
+    border-color: var(--accent-dim);
+    opacity: 0.6;
+  }
+
+  .exercise.completed .ex-name::before {
+    content: '✓ ';
+    color: var(--accent);
+  }
+
+  .ex-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .ex-name {
+    font-weight: 500;
+    font-size: 15px;
+    line-height: 1.3;
+  }
+
+  .ex-detail {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 3px;
+    font-weight: 300;
+  }
+
+  .ex-prescription {
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .ex-sets {
+    font-family: 'Oswald', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .ex-rest {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* Conditioning Block */
+  .conditioning {
+    background: linear-gradient(135deg, #1a1205 0%, #141414 100%);
+    border: 1px solid #3a2e10;
+    border-radius: 10px;
+    padding: 16px;
+    margin-top: 16px;
+  }
+
+  .conditioning .block-header {
+    color: var(--orange);
+  }
+
+  .conditioning-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+  }
+
+  .conditioning-item + .conditioning-item {
+    border-top: 1px solid #2a2210;
+  }
+
+  .cond-name {
+    font-weight: 500;
+    font-size: 14px;
+  }
+
+  .cond-rx {
+    font-family: 'Oswald', sans-serif;
+    color: var(--orange);
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  /* Rest Day */
+  .rest-content {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px 20px;
+    text-align: center;
+  }
+
+  .rest-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+  }
+
+  .rest-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 20px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+
+  .rest-desc {
+    color: var(--text-dim);
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 1.6;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  /* Notes */
+  .notes {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 24px;
+  }
+
+  .notes h3 {
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  .note-item {
+    display: flex;
+    gap: 10px;
+    padding: 6px 0;
+    font-size: 13px;
+    color: var(--text-dim);
+    font-weight: 300;
+    line-height: 1.5;
+  }
+
+  .note-bullet {
+    color: var(--accent);
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  /* Responsive */
+  @media (max-width: 480px) {
+    .container { padding: 16px 12px 48px; }
+    .header h1 { font-size: 28px; }
+    .day-tab { padding: 8px 2px; }
+    .day-name { font-size: 11px; }
+    .day-label { font-size: 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="header-label">12-Week Program</div>
+    <h1>Lean Out Protocol</h1>
+    <div class="header-sub">Former D1 DT → Athletic 240</div>
+    <div class="stats-bar">
+      <div class="stat-item">
+        <div class="stat-value">264</div>
+        <div class="stat-label">Current</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">→</div>
+        <div class="stat-label"></div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">240</div>
+        <div class="stat-label">Target</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">5</div>
+        <div class="stat-label">Days/Wk</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">56</div>
+        <div class="stat-label">Resting HR</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="overview">
+    <h2>Program Philosophy</h2>
+    <p>
+      You've got 6 months of D1 strength still in the tank. The goal isn't to train like you're trying to play again — it's to <strong>leverage that base while stripping fat</strong>. Heavy compounds stay in at moderate volume to preserve muscle. Conditioning ramps up progressively. We're targeting <strong>~2 lbs/week loss</strong>, landing you around 240 in 12 weeks while keeping you looking and feeling athletic — not depleted.
+    </p>
+  </div>
+
+  <!-- Day Tabs -->
+  <div class="week-nav" id="weekNav">
+    <div class="day-tab active" data-day="1">
+      <div class="day-name">MON</div>
+      <div class="day-label">Upper Push</div>
+    </div>
+    <div class="day-tab" data-day="2">
+      <div class="day-name">TUE</div>
+      <div class="day-label">Lower</div>
+    </div>
+    <div class="day-tab" data-day="3">
+      <div class="day-name">WED</div>
+      <div class="day-label">Conditioning</div>
+    </div>
+    <div class="day-tab" data-day="4">
+      <div class="day-name">THU</div>
+      <div class="day-label">Upper Pull</div>
+    </div>
+    <div class="day-tab" data-day="5">
+      <div class="day-name">FRI</div>
+      <div class="day-label">Legs + Carry</div>
+    </div>
+    <div class="day-tab rest" data-day="6">
+      <div class="day-name">SAT</div>
+      <div class="day-label">Active Rest</div>
+    </div>
+    <div class="day-tab rest" data-day="7">
+      <div class="day-name">SUN</div>
+      <div class="day-label">Off</div>
+    </div>
+  </div>
+
+  <!-- DAY 1: Upper Push -->
+  <div class="day-content active" id="day1">
+    <div class="day-header">
+      <div class="day-title">Upper Push — Strength</div>
+      <div class="day-focus">Heavy horizontal press + shoulder volume + triceps</div>
+      <div class="day-duration">~60 min</div>
+    </div>
+
+    <div class="block">
+      <div class="block-header">Main Lift</div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Barbell Bench Press</div>
+          <div class="ex-detail">Work up to a heavy top set, then drop 10% for back-offs</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">1×5, 3×6</div>
+          <div class="ex-rest">Rest 3 min</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="block-header">Accessory Work</div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Incline Dumbbell Press</div>
+          <div class="ex-detail">30° incline, controlled eccentric</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">3×10</div>
+          <div class="ex-rest">Rest 90s</div>
+        </div>
+      </div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Standing OHP</div>
+          <div class="ex-detail">Barbell or dumbbells, strict form</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">3×8</div>
+          <div class="ex-rest">Rest 2 min</div>
+        </div>
+      </div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Cable Lateral Raises</div>
+          <div class="ex-detail">Behind-body angle, slow negative</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">3×15</div>
+          <div class="ex-rest">Rest 60s</div>
+        </div>
+      </div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Tricep Dips (Weighted)</div>
+          <div class="ex-detail">Add weight if bodyweight is easy for 12+</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">3×10</div>
+          <div class="ex-rest">Rest 90s</div>
+        </div>
+      </div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Overhead Tricep Extension</div>
+          <div class="ex-detail">Cable rope, squeeze at bottom</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">3×12</div>
+          <div class="ex-rest">Rest 60s</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="conditioning">
+      <div class="block-header">Finisher</div>
+      <div class="conditioning-item">
+        <div class="cond-name">Incline Treadmill Walk</div>
+        <div class="cond-rx">12% grade · 15 min</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DAY 2: Lower Strength -->
+  <div class="day-content" id="day2">
+    <div class="day-header">
+      <div class="day-title">Lower — Strength</div>
+      <div class="day-focus">Squat pattern + posterior chain + unilateral work</div>
+      <div class="day-duration">~65 min</div>
+    </div>
+
+    <div class="block">
+      <div class="block-header">Main Lift</div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Back Squat</div>
+          <div class="ex-detail">Heavy top set + back-off sets. Own the hole.</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">1×5, 3×6</div>
+          <div class="ex-rest">Rest 3 min</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="block-header">Accessory Work</div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Romanian Deadlift</div>
+          <div class="ex-detail">Barbell, hinge deep, feel the hamstrings load</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">3×8</div>
+          <div class="ex-rest">Rest 2 min</div>
+        </div>
+      </div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Bulgarian Split Squats</div>
+          <div class="ex-detail">DB in each hand, rear foot elevated</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">3×10/leg</div>
+          <div class="ex-rest">Rest 90s</div>
+        </div>
+      </div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Leg Press</div>
+          <div class="ex-detail">High foot placement, full ROM</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">3×12</div>
+          <div class="ex-rest">Rest 90s</div>
+        </div>
+      </div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Leg Curl (Lying or Seated)</div>
+          <div class="ex-detail">Slow eccentric, pause at contraction</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">3×12</div>
+          <div class="ex-rest">Rest 60s</div>
+        </div>
+      </div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Standing Calf Raises</div>
+          <div class="ex-detail">Full stretch at bottom, 2-sec hold at top</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">4×15</div>
+          <div class="ex-rest">Rest 60s</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="conditioning">
+      <div class="block-header">Finisher</div>
+      <div class="conditioning-item">
+        <div class="cond-name">Assault Bike Intervals</div>
+        <div class="cond-rx">30s on / 60s off · 8 rounds</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DAY 3: Conditioning -->
+  <div class="day-content" id="day3">
+    <div class="day-header">
+      <div class="day-title">Conditioning — GPP</div>
+      <div class="day-focus">Burn calories, build work capacity, stay athletic</div>
+      <div class="day-duration">~50 min</div>
+    </div>
+
+    <div class="block">
+      <div class="block-header">Warmup — 10 min</div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Jump Rope or Light Jog</div>
+          <div class="ex-detail">Get the heart rate to 130+</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">5 min</div>
+        </div>
+      </div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Dynamic Stretching</div>
+          <div class="ex-detail">Hip circles, leg swings, world's greatest stretch</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">5 min</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="block-header">Circuit — 4 Rounds</div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Sled Push (Heavy)</div>
+          <div class="ex-detail">Low handles, drive through the floor</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">40 yds</div>
+        </div>
+      </div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Battle Ropes</div>
+          <div class="ex-detail">Alternating waves, stay explosive</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">30 sec</div>
+        </div>
+      </div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Box Jumps</div>
+          <div class="ex-detail">Step down each rep, reset and explode</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">8 reps</div>
+        </div>
+      </div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Kettlebell Swings</div>
+          <div class="ex-detail">Russian style, hip snap, heavy bell</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">15 reps</div>
+        </div>
+      </div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Med Ball Slams</div>
+          <div class="ex-detail">Full extension overhead, slam through the floor</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">10 reps</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="conditioning">
+      <div class="block-header">Cooldown</div>
+      <div class="conditioning-item">
+        <div class="cond-name">Incline Treadmill Walk</div>
+        <div class="cond-rx">10% grade · 10 min</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DAY 4: Upper Pull -->
+  <div class="day-content" id="day4">
+    <div class="day-header">
+      <div class="day-title">Upper Pull — Strength</div>
+      <div class="day-focus">Heavy vertical + horizontal pulls, biceps, rear delts</div>
+      <div class="day-duration">~60 min</div>
+    </div>
+
+    <div class="block">
+      <div class="block-header">Main Lift</div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Barbell Bent-Over Row</div>
+          <div class="ex-detail">Overhand grip, pull to navel, no body English</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">1×5, 3×6</div>
+          <div class="ex-rest">Rest 3 min</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="block-header">Accessory Work</div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Weighted Pull-Ups</div>
+          <div class="ex-detail">Add weight when bodyweight is easy for 8+. Lat-focused.</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">4×6-8</div>
+          <div class="ex-rest">Rest 2 min</div>
+        </div>
+      </div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Seated Cable Row</div>
+          <div class="ex-detail">Close grip attachment, squeeze shoulder blades</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">3×10</div>
+          <div class="ex-rest">Rest 90s</div>
+        </div>
+      </div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Face Pulls</div>
+          <div class="ex-detail">Rope attachment, external rotate at the top</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">3×15</div>
+          <div class="ex-rest">Rest 60s</div>
+        </div>
+      </div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Barbell Curl</div>
+          <div class="ex-detail">Strict form, no swinging</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">3×10</div>
+          <div class="ex-rest">Rest 90s</div>
+        </div>
+      </div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Incline Dumbbell Curl</div>
+          <div class="ex-detail">45° bench, full stretch at bottom</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">3×12</div>
+          <div class="ex-rest">Rest 60s</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="conditioning">
+      <div class="block-header">Finisher</div>
+      <div class="conditioning-item">
+        <div class="cond-name">Rowing Machine</div>
+        <div class="cond-rx">500m intervals · 4 rounds · Rest 90s</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DAY 5: Legs + Carry -->
+  <div class="day-content" id="day5">
+    <div class="day-header">
+      <div class="day-title">Legs + Loaded Carries</div>
+      <div class="day-focus">Deadlift pattern + quad volume + farmer's carries for grip & conditioning</div>
+      <div class="day-duration">~65 min</div>
+    </div>
+
+    <div class="block">
+      <div class="block-header">Main Lift</div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Trap Bar Deadlift</div>
+          <div class="ex-detail">More quad-friendly than conventional, easier on the back during a cut</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">1×5, 3×6</div>
+          <div class="ex-rest">Rest 3 min</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="block-header">Accessory Work</div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Front Squat</div>
+          <div class="ex-detail">Stay upright, elbows high, moderate weight</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">3×8</div>
+          <div class="ex-rest">Rest 2 min</div>
+        </div>
+      </div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Walking Lunges</div>
+          <div class="ex-detail">Dumbbells, long stride, knee tracks over toe</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">3×12/leg</div>
+          <div class="ex-rest">Rest 90s</div>
+        </div>
+      </div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Hip Thrust</div>
+          <div class="ex-detail">Barbell, pause at the top for 2 sec</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">3×10</div>
+          <div class="ex-rest">Rest 90s</div>
+        </div>
+      </div>
+      <div class="exercise" onclick="this.classList.toggle('completed')">
+        <div class="ex-info">
+          <div class="ex-name">Leg Extension</div>
+          <div class="ex-detail">Slow eccentric, quad squeeze at top</div>
+        </div>
+        <div class="ex-prescription">
+          <div class="ex-sets">3×15</div>
+          <div class="ex-rest">Rest 60s</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="conditioning">
+      <div class="block-header">Loaded Carry Finisher</div>
+      <div class="conditioning-item">
+        <div class="cond-name">Heavy Farmer's Carry</div>
+        <div class="cond-rx">4 × 60 yds · Rest 90s</div>
+      </div>
+      <div class="conditioning-item">
+        <div class="cond-name">Sandbag Bear Hug Carry</div>
+        <div class="cond-rx">3 × 40 yds · Rest 60s</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DAY 6: Active Recovery -->
+  <div class="day-content" id="day6">
+    <div class="rest-content">
+      <div class="rest-icon">🎣</div>
+      <div class="rest-title">Active Recovery</div>
+      <div class="rest-desc">
+        Get outside. Fish the flats, walk the waterfront, paddle, stretch — anything that gets blood moving without taxing the CNS. 30-45 min easy movement. This is where the body actually rebuilds.
+      </div>
+    </div>
+  </div>
+
+  <!-- DAY 7: Full Rest -->
+  <div class="day-content" id="day7">
+    <div class="rest-content">
+      <div class="rest-icon">🛌</div>
+      <div class="rest-title">Full Rest</div>
+      <div class="rest-desc">
+        Sleep 8+ hours. Eat well. Hydrate. Meal prep for the week. Your muscles grow here, not in the gym. Don't feel guilty about doing nothing.
+      </div>
+    </div>
+  </div>
+
+  <!-- Program Notes -->
+  <div class="notes">
+    <h3>Programming Notes</h3>
+    <div class="note-item">
+      <span class="note-bullet">→</span>
+      <span><strong>Loading:</strong> Start main lifts at ~70% of your estimated max. Add 5 lbs/week on upper lifts, 10 lbs/week on lower lifts for the first 6 weeks. After that, hold weight and focus on rep quality.</span>
+    </div>
+    <div class="note-item">
+      <span class="note-bullet">→</span>
+      <span><strong>Conditioning ramp:</strong> Weeks 1-4 do the listed finishers. Weeks 5-8 add 5 min to each finisher. Weeks 9-12 add a second conditioning session (fasted morning walk, 30 min).</span>
+    </div>
+    <div class="note-item">
+      <span class="note-bullet">→</span>
+      <span><strong>Nutrition target:</strong> At 264 lbs, aim for ~2,600-2,800 cal/day. Protein at 1g/lb lean mass (~210-220g). Don't crash diet — you'll burn muscle. The deficit comes from training volume.</span>
+    </div>
+    <div class="note-item">
+      <span class="note-bullet">→</span>
+      <span><strong>Recovery priority:</strong> Sleep > nutrition > training. At 264 with D1 training history, your body can handle volume. But on a caloric deficit, sleep debt will tank your performance and recovery fast.</span>
+    </div>
+    <div class="note-item">
+      <span class="note-bullet">→</span>
+      <span><strong>Tap exercises to mark complete.</strong> Resets each time you reload.</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const tabs = document.querySelectorAll('.day-tab');
+  const contents = document.querySelectorAll('.day-content');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const day = tab.dataset.day;
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      contents.forEach(c => c.classList.remove('active'));
+      document.getElementById('day' + day).classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
